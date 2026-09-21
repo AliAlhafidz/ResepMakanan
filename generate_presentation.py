@@ -1,8 +1,9 @@
-﻿import os
+import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN
 
 def create_presentation():
     prs = Presentation()
@@ -344,15 +345,16 @@ def create_presentation():
         ("Tahap 2: AI Smart Kitchen", "• Rekomendasi menu dari bahan kulkas.\n• Ekstraksi resep dari foto buku masak.\n• Timer memasak interaktif per langkah.", SECONDARY_COLOR),
         ("Tahap 3: Aksesibilitas", "• Mode offline PWA tanpa kuota internet.\n• Ekspor shopping list ke WhatsApp.\n• Dukungan multi-bahasa.", SUCCESS_COLOR)
     ]
+    card_h_s7 = Inches(4.0)
     for i, (r_title, r_desc, accent) in enumerate(roadmap_items):
         cleft = Inches(0.8 + i * 4.02)
-        add_card(slide7, cleft, card_top, card_w, card_h)
+        add_card(slide7, cleft, card_top, card_w, card_h_s7)
         bar = slide7.shapes.add_shape(MSO_SHAPE.RECTANGLE, cleft, card_top, card_w, Inches(0.12))
         bar.fill.solid()
         bar.fill.fore_color.rgb = accent
         bar.line.fill.background()
 
-        tb = slide7.shapes.add_textbox(cleft + Inches(0.25), card_top + Inches(0.3), card_w - Inches(0.5), card_h - Inches(0.5))
+        tb = slide7.shapes.add_textbox(cleft + Inches(0.25), card_top + Inches(0.25), card_w - Inches(0.5), card_h_s7 - Inches(0.4))
         tf = tb.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
@@ -360,13 +362,30 @@ def create_presentation():
         p.font.size = Pt(17)
         p.font.bold = True
         p.font.color.rgb = accent
-        p.space_after = Pt(14)
+        p.space_after = Pt(12)
         for line in r_desc.split("\n"):
             p_line = tf.add_paragraph()
             p_line.text = line
-            p_line.font.size = Pt(13)
+            p_line.font.size = Pt(12)
             p_line.font.color.rgb = TEXT_MAIN
-            p_line.space_after = Pt(10)
+            p_line.space_after = Pt(8)
+
+    # Tombol Demo Web Lokal di Slide 7
+    btn_box = slide7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(3.8), Inches(5.95), Inches(5.7), Inches(0.85))
+    btn_box.fill.solid()
+    btn_box.fill.fore_color.rgb = PRIMARY_COLOR
+    btn_box.line.fill.background()
+
+    tf_btn = btn_box.text_frame
+    tf_btn.word_wrap = True
+    p_btn = tf_btn.paragraphs[0]
+    p_btn.alignment = PP_ALIGN.CENTER
+    run_btn = p_btn.add_run()
+    run_btn.text = "🌐 BUKA DEMO WEB LOKAL (127.0.0.1:8000)"
+    run_btn.font.size = Pt(14)
+    run_btn.font.bold = True
+    run_btn.font.color.rgb = RGBColor(255, 255, 255)
+    run_btn.hyperlink.address = "http://127.0.0.1:8000/"
 
     # ==========================================
     # SLIDE 8: Kesimpulan (Satu Paragraf Bersih)
