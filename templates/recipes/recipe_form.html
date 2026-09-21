@@ -25,7 +25,7 @@
         {% include 'includes/form_errors.html' with formset=formset_steps %}
 
         <form method="POST" enctype="multipart/form-data" class="space-y-8" 
-              x-data="{
+              x-data='{
                   ingCount: {{ formset_ingredients.total_form_count }},
                   stepCount: {{ formset_steps.total_form_count }},
                   addIngredient() {
@@ -42,12 +42,12 @@
                       this.renumberSteps();
                   },
                   renumberSteps() {
-                      let inputs = this.$refs.stepList.querySelectorAll('input[name$=\"-step_number\"]');
+                      let inputs = this.$refs.stepList.querySelectorAll("input[name$='-step_number']");
                       inputs.forEach((input, index) => {
                           input.value = index + 1;
                       });
                   }
-              }">
+              }'>
             {% csrf_token %}
             
             <!-- 1. Informasi Utama -->
