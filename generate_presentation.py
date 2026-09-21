@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -30,7 +30,7 @@ def create_presentation():
         bg.line.fill.background()
         return bg
 
-    def add_header(slide, title_text, category_text="DAPUR NUSA • PROYEK WEB RESEP NUSANTARA"):
+    def add_header(slide, title_text, category_text="WEBSITE RESEP MASAKAN • PROYEK WEB"):
         cat_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.35))
         tf_cat = cat_box.text_frame
         tf_cat.word_wrap = True
@@ -80,7 +80,7 @@ def create_presentation():
     p0.space_after = Pt(10)
 
     p1 = tf1.add_paragraph()
-    p1.text = "🍳 DAPUR NUSA"
+    p1.text = "🍳 WEBSITE RESEP MASAKAN"
     p1.font.size = Pt(40)
     p1.font.bold = True
     p1.font.color.rgb = RGBColor(255, 255, 255)
@@ -161,14 +161,14 @@ def create_presentation():
     tf2.word_wrap = True
 
     p_sol_title = tf2.paragraphs[0]
-    p_sol_title.text = "💡 Solusi Dapur Nusa"
+    p_sol_title.text = "💡 Solusi Web Masakan Ini"
     p_sol_title.font.size = Pt(20)
     p_sol_title.font.bold = True
     p_sol_title.font.color.rgb = SUCCESS_COLOR
     p_sol_title.space_after = Pt(18)
 
     p_sol_desc = tf2.add_paragraph()
-    p_sol_desc.text = "Dapur Nusa menghadirkan platform katalog resep nusantara terstandarisasi berbasis arsitektur DATH Stack yang sangat ringan dan cepat, dilengkapi fitur cerdas kalkulator porsi dinamis untuk penyesuaian takaran bahan secara otomatis serta integrasi daftar belanja digital yang mempermudah seluruh proses memasak hidangan tradisional dari awal hingga akhir."
+    p_sol_desc.text = "Website resep masakan ini menghadirkan platform katalog resep nusantara terstandarisasi berbasis arsitektur DATH Stack yang sangat ringan dan cepat, dilengkapi fitur cerdas kalkulator porsi dinamis untuk penyesuaian takaran bahan secara otomatis serta integrasi daftar belanja digital yang mempermudah seluruh proses memasak hidangan tradisional dari awal hingga akhir."
     p_sol_desc.font.size = Pt(15)
     p_sol_desc.font.color.rgb = TEXT_MAIN
     p_sol_desc.space_after = Pt(14)
@@ -394,7 +394,7 @@ def create_presentation():
 
     # Satu Paragraf
     p2 = tf8.add_paragraph()
-    p2.text = "Dapur Nusa berhasil menghadirkan platform kuliner nusantara yang ringan, cepat, dan interaktif berkat perpaduan arsitektur DATH Stack (Django, Alpine.js, Tailwind CSS, HTMX), dilengkapi fitur cerdas seperti kalkulator porsi dinamis dan daftar belanja otomatis yang memberikan solusi praktis, efisien, serta pengalaman memasak yang menyenangkan bagi seluruh keluarga."
+    p2.text = "Website resep masakan ini berhasil menghadirkan platform kuliner nusantara yang ringan, cepat, dan interaktif berkat perpaduan arsitektur DATH Stack (Django, Alpine.js, Tailwind CSS, HTMX), dilengkapi fitur cerdas seperti kalkulator porsi dinamis dan daftar belanja otomatis yang memberikan solusi praktis, efisien, serta pengalaman memasak yang menyenangkan bagi seluruh keluarga."
     p2.font.size = Pt(17)
     p2.font.color.rgb = RGBColor(245, 235, 225)
     p2.space_after = Pt(32)
@@ -405,9 +405,10 @@ def create_presentation():
     p3.font.bold = True
     p3.font.color.rgb = ACCENT_COLOR
 
-    output_path = r"c:\Users\LAB1_CLIENT25\Desktop\resep_makan\Presentasi_Dapur_Nusa_Final.pptx"
+    output_path = r"c:\Users\LAB1_CLIENT25\Desktop\resep_makan\Presentasi_Resep_Masakan.pptx"
     prs.save(output_path)
     print(f"Presentation saved successfully to {output_path}")
 
 if __name__ == "__main__":
     create_presentation()
+
