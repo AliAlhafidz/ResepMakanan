@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Moderasi Admin — Dapur Nusa{% endblock %}
+
+{% block content %}
+<div class="space-y-8" x-data="{ rejectModal: null, rejectReason: '' }">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="font-serif font-bold text-2xl sm:text-3xl text-stone-900">Dashboard &amp; Moderasi Admin</h1>
+            <p class="text-xs text-stone-500 mt-1">Pantau statistik katalog dan kelola persetujuan resep komunitas</p>
+        </div>
+        {% if user.is_staff %}
+        <a href="{% url 'admin:index' %}" class="px-4 py-2 rounded-full border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-base">settings</span>
+            Django Admin Panel
+        </a>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+    <div class="space-y-2" role="status" aria-live="polite">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-2xl text-sm font-medium flex items-center gap-2
+            {% if message.tags == 'success' %}bg-primary-50 text-primary-800 border border-primary-200
+            {% elif message.tags == 'error' %}bg-tertiary-50 text-tertiary-800 border border-tertiary-200
+            {% else %}bg-secondary-50 text-secondary-800 border border-secondary-200{% endif %}">
+            <span class="material-symbols-outlined text-base">
+                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+            </span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Stat Cards M3 — Resep -->
+    <div>
+        <h2 class="text-xs font-bold uppercase text-stone-400 mb-3 tracking-wider">Statistik Resep</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-primary-100 text-primary-800 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">menu_book</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Diterbitkan</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ published_recipes }}</span>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-secondary-100 text-secondary-800 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">pending_actions</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Antrean</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ pending_recipes.count }}</span>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-stone-100 text-stone-600 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">receipt_long</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Total Resep</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ total_recipes }}</span>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-tertiary-100 text-tertiary-800 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">cancel</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Ditolak</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ rejected_recipes }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Cards M3 — Pengguna -->
+    <div>
+        <h2 class="text-xs font-bold uppercase text-stone-400 mb-3 tracking-wider">Statistik Pengguna</h2>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-stone-100 text-stone-600 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">group</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Total Pengguna</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ total_users }}</span>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-primary-100 text-primary-800 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">person_check</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Aktif</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ active_users }}</span>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-tertiary-100 text-tertiary-800 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl">person_off</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-stone-400 font-semibold uppercase leading-none">Nonaktif</span>
+                    <span class="font-serif font-bold text-2xl text-stone-900 block">{{ inactive_users }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Moderation List Section -->
+    <div class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-m3-1">
+        <h2 class="font-serif font-bold text-xl text-stone-900 mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary-600">verified</span>
+            Resep Menunggu Persetujuan
+        </h2>
+
+        {% if pending_recipes %}
+        <div class="divide-y divide-stone-100">
+            {% for r in pending_recipes %}
+            <div class="py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-xl bg-stone-100 overflow-hidden flex-shrink-0">
+                        {% if r.image %}
+                            <img src="{{ r.image.url }}" alt="{{ r.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-stone-300">
+                                <span class="material-symbols-outlined">restaurant</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-secondary-700 bg-secondary-50 px-2 py-0.5 rounded-md">{{ r.category.name }}</span>
+                        <h4 class="font-serif font-bold text-base text-stone-900 mt-1">{{ r.title }}</h4>
+                        <span class="text-xs text-stone-500">Diajukan oleh: <strong>{{ r.author.username }}</strong> pada {{ r.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <a href="{% url 'recipes:detail' slug=r.slug %}?preview=1" target="_blank"
+                       class="px-3 py-1.5 rounded-full border border-stone-300 text-xs font-semibold text-stone-600 hover:bg-stone-50 focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:outline-none">
+                        Pratinjau
+                    </a>
+
+                    <!-- Tombol Setujui (POST) -->
+                    <form action="{% url 'recipes:moderate_recipe' recipe_id=r.id action='approve' %}" method="POST" class="inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="px-4 py-1.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-sm transition focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:outline-none"
+                                aria-label="Setujui resep {{ r.title }}">
+                            Setujui
+                        </button>
+                    </form>
+
+                    <!-- Tombol Tolak — buka modal Alpine -->
+                    <button type="button"
+                            @click="rejectModal = {{ r.id }}; rejectReason = ''"
+                            class="px-4 py-1.5 rounded-full bg-tertiary-600 hover:bg-tertiary-700 text-white text-xs font-semibold shadow-sm transition focus-visible:ring-2 focus-visible:ring-tertiary-400 focus-visible:outline-none"
+                            aria-label="Tolak resep {{ r.title }}">
+                        Tolak
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Penolakan untuk resep ini -->
+            <div x-show="rejectModal === {{ r.id }}"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @keydown.escape.window="rejectModal = null"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="Modal penolakan resep {{ r.title }}"
+                 style="display:none;">
+                <div @click.outside="rejectModal = null"
+                     class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="font-serif font-bold text-lg text-stone-900">Tolak Resep</h3>
+                            <p class="text-xs text-stone-500 mt-0.5">«{{ r.title }}»</p>
+                        </div>
+                        <button @click="rejectModal = null"
+                                class="text-stone-400 hover:text-stone-700 focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:outline-none rounded-full p-1"
+                                aria-label="Tutup modal">
+                            <span class="material-symbols-outlined text-xl">close</span>
+                        </button>
+                    </div>
+
+                    <form action="{% url 'recipes:moderate_recipe' recipe_id=r.id action='reject' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="space-y-3">
+                            <label for="reason_{{ r.id }}" class="block text-sm font-semibold text-stone-700">
+                                Alasan Penolakan <span class="text-tertiary-600">*</span>
+                            </label>
+                            <textarea id="reason_{{ r.id }}"
+                                      name="reason"
+                                      x-model="rejectReason"
+                                      rows="4"
+                                      required
+                                      minlength="10"
+                                      maxlength="500"
+                                      placeholder="Jelaskan alasan penolakan secara singkat (min. 10 karakter)..."
+                                      class="w-full rounded-2xl border border-stone-300 px-4 py-2.5 text-sm text-stone-900 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:outline-none resize-none transition"></textarea>
+                            <p class="text-[10px] text-stone-400">Minimal 10 karakter. Alasan ini akan dikirimkan ke pengaju resep.</p>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button type="button"
+                                    @click="rejectModal = null"
+                                    class="px-4 py-2 rounded-full border border-stone-300 text-xs font-semibold text-stone-600 hover:bg-stone-50 focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:outline-none">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    :disabled="rejectReason.trim().length < 10"
+                                    class="px-4 py-2 rounded-full bg-tertiary-600 hover:bg-tertiary-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-sm transition focus-visible:ring-2 focus-visible:ring-tertiary-400 focus-visible:outline-none">
+                                Konfirmasi Tolak
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-10 text-stone-400" role="status">
+            <span class="material-symbols-outlined text-4xl">task_alt</span>
+            <p class="text-xs mt-2">Tidak ada resep yang menunggu moderasi saat ini. Semua bersih!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

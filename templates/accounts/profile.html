@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Profil Saya — Dapur Nusa{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8" x-data="{ activeTab: '{{ active_tab|default:'favorites' }}' }">
+    <!-- Profile Card Header -->
+    <div class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-m3-1 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div class="w-24 h-24 rounded-full bg-primary-700 text-white flex items-center justify-center text-3xl font-bold shadow-md flex-shrink-0 overflow-hidden">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" class="w-full h-full object-cover">
+            {% else %}
+                {{ user.username|slice:":1"|upper }}
+            {% endif %}
+        </div>
+        
+        <div class="flex-1 text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h1 class="font-serif font-bold text-2xl text-stone-900">{{ profile.display_name|default:user.username }}</h1>
+                    <span class="text-xs text-stone-500">@{{ user.username }} • Bergabung {{ user.date_joined|date:"d M Y" }}</span>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold self-center sm:self-auto {% if user.is_admin_role %}bg-secondary-100 text-secondary-800 border border-secondary-300{% else %}bg-primary-50 text-primary-800 border border-primary-200{% endif %}">
+                    Role: {{ user.get_role_display }}
+                </span>
+            </div>
+
+            <p class="text-stone-600 text-sm mt-3 max-w-xl">
+                {{ profile.bio|default:"Penggemar kuliner nusantara sejati." }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2 border-b border-stone-200">
+        <button 
+            type="button" 
+            @click="activeTab = 'favorites'"
+            :class="activeTab === 'favorites' ? 'border-primary-600 text-primary-700 font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'"
+            class="pb-3 px-4 border-b-2 text-sm flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-primary-600">
+            <span class="material-symbols-outlined text-base">favorite</span>
+            Resep Favorit ({{ favorites.count }})
+        </button>
+        <button 
+            type="button" 
+            @click="activeTab = 'recipes'"
+            :class="activeTab === 'recipes' ? 'border-primary-600 text-primary-700 font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'"
+            class="pb-3 px-4 border-b-2 text-sm flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-primary-600">
+            <span class="material-symbols-outlined text-base">book</span>
+            Resep Saya ({{ my_recipes.count }})
+        </button>
+        <button 
+            type="button" 
+            @click="activeTab = 'edit'"
+            :class="activeTab === 'edit' ? 'border-primary-600 text-primary-700 font-bold' : 'border-transparent text-stone-500 hover:text-stone-800'"
+            class="pb-3 px-4 border-b-2 text-sm flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-primary-600">
+            <span class="material-symbols-outlined text-base">manage_accounts</span>
+            Edit Profil
+        </button>
+    </div>
+
+    <!-- Tab 1: Resep Favorit (dengan penghapusan kartu instan) -->
+    <div x-show="activeTab === 'favorites'">
+        {% if favorites %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for fav in favorites %}
+            <div data-recipe-card class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-m3-1 transition flex flex-col justify-between">
+                <div class="h-44 bg-stone-100 relative">
+                    {% if fav.recipe.image %}
+                        <img src="{{ fav.recipe.image.url }}" alt="{{ fav.recipe.title }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-stone-400">
+                            <span class="material-symbols-outlined text-4xl">restaurant</span>
+                        </div>
+                    {% endif %}
+                    <div class="absolute top-3 right-3">
+                        {% include 'recipes/partials/favorite_button.html' with recipe=fav.recipe is_favorited=True remove_card=True %}
+                    </div>
+                </div>
+                <div class="p-4">
+                    <span class="text-[11px] font-semibold text-primary-700 uppercase">{{ fav.recipe.category.name }}</span>
+                    <a href="{% url 'recipes:detail' slug=fav.recipe.slug %}">
+                        <h4 class="font-serif font-bold text-base text-stone-900 hover:text-primary-700 transition truncate">{{ fav.recipe.title }}</h4>
+                    </a>
+                    <div class="flex items-center justify-between text-xs text-stone-500 mt-3 pt-3 border-t border-stone-100">
+                        <span>{{ fav.recipe.total_time }} menit</span>
+                        <span>{{ fav.recipe.default_servings }} Porsi</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-3xl border border-stone-200 p-6">
+            <span class="material-symbols-outlined text-4xl text-stone-400">heart_broken</span>
+            <p class="text-stone-500 text-sm mt-2">Belum ada resep favorit yang disimpan.</p>
+            <a href="{% url 'recipes:list' %}" class="inline-block mt-4 text-xs font-semibold text-primary-700 hover:underline">Jelajah Resep Sekarang &rarr;</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 2: Resep Saya -->
+    <div x-show="activeTab === 'recipes'" x-cloak>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-serif font-bold text-lg text-stone-900">Daftar Resep yang Anda Buat</h3>
+            <a href="{% url 'recipes:create' %}" class="px-4 py-2 rounded-full bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">add</span> Buat Resep Baru
+            </a>
+        </div>
+
+        {% if my_recipes %}
+        <div class="bg-white rounded-3xl border border-stone-200 divide-y divide-stone-100 overflow-hidden">
+            {% for r in my_recipes %}
+            <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase {% if r.status == 'PUBLISHED' %}bg-primary-100 text-primary-800{% elif r.status == 'PENDING' %}bg-secondary-100 text-secondary-800{% else %}bg-tertiary-100 text-tertiary-800{% endif %}">
+                        {{ r.get_status_display }}
+                    </span>
+                    <a href="{% url 'recipes:detail' slug=r.slug %}">
+                        <h4 class="font-serif font-bold text-base text-stone-900 mt-1 hover:text-primary-700 transition">{{ r.title }}</h4>
+                    </a>
+                    <span class="text-xs text-stone-500">Dibuat {{ r.created_at|date:"d M Y" }} • {{ r.category.name }}</span>
+                    {% if r.rejection_reason %}
+                    <p class="text-xs text-tertiary-800 mt-1 bg-tertiary-50 p-2.5 rounded-xl border border-tertiary-200">
+                        <strong>Catatan Admin:</strong> {{ r.rejection_reason }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'recipes:edit' slug=r.slug %}" class="p-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50" title="Edit" aria-label="Edit Resep">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-3xl border border-stone-200 p-6">
+            <span class="material-symbols-outlined text-4xl text-stone-400">menu_book</span>
+            <p class="text-stone-500 text-sm mt-2">Anda belum membuat resep apa pun.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab 3: Edit Profil -->
+    <div x-show="activeTab === 'edit'" x-cloak>
+        <div class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 max-w-xl">
+            <h3 class="font-serif font-bold text-xl text-stone-900 mb-4">Pengaturan Profil</h3>
+            
+            {% include 'includes/form_errors.html' with form=form %}
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ form.display_name.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Nama Tampilan</label>
+                    {{ form.display_name }}
+                    {% if form.display_name.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.display_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.bio.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Bio Singkat</label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.bio.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.avatar.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Foto Profil (Maks. 2 MB)</label>
+                    {{ form.avatar }}
+                    {% if form.avatar.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.avatar.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white font-semibold text-sm shadow-sm transition focus-visible:ring-2 focus-visible:ring-primary-600">
+                    Simpan Perubahan
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

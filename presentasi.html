@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dapur Nusa — Presentasi Proyek Website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #c2410c;       /* Warm Terracotta */
+      --primary-dark: #7c2d12;  /* Deep Burgundy */
+      --secondary: #d97706;     /* Turmeric Amber */
+      --accent-green: #15803d;  /* Herb Green */
+      --accent-blue: #0284c7;   /* Blue */
+      --bg: #1c1917;            /* Dark Theater Background */
+      --card-bg: #ffffff;
+      --card-subtle: #fbf9f6;
+      --text-main: #1c1917;
+      --text-muted: #57534e;
+      --border: #e7dfd5;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Mencegah scroll halaman penuh */
+      background: var(--bg);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--text-main);
+    }
+
+    /* Outer Wrapper for Theater View */
+    .deck-viewport {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Top Control Bar */
+    header.top-bar {
+      height: 60px;
+      background: rgba(28, 25, 23, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ffedd5;
+    }
+
+    .slide-badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .counter-pill {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e7dfd5;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      padding: 0.35rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .icon-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Slide Stage (Center Viewport) */
+    .slide-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 2rem;
+      position: relative;
+    }
+
+    /* Individual Slide Card (Aspect Ratio 16:9 Styled) */
+    .slide-card {
+      position: absolute;
+      width: min(1200px, 94vw);
+      height: min(675px, 82vh);
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      padding: 2.8rem 3.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.96) translateX(40px);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+    }
+
+    .slide-card.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateX(0);
+      z-index: 10;
+    }
+
+    /* Hero / Cover Slide Variant */
+    .slide-card.hero {
+      background: linear-gradient(135deg, #2a0800 0%, #431407 60%, #7c2d12 100%);
+      color: #ffffff;
+    }
+
+    .slide-card.hero .slide-tag {
+      color: #fdba74;
+    }
+
+    .slide-card.hero .slide-title {
+      color: #ffffff;
+    }
+
+    .slide-card.hero .slide-desc {
+      color: #fed7aa;
+    }
+
+    /* Team Members Minimalist Compact List */
+    .team-box-compact {
+      margin-top: 1.25rem;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 0.85rem 1.2rem;
+      max-width: 550px;
+    }
+
+    .team-title-compact {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #facc15;
+      margin-bottom: 0.45rem;
+    }
+
+    .team-list-compact {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem 1rem;
+    }
+
+    .team-list-compact li {
+      font-size: 0.85rem;
+      color: #ffedd5;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .team-list-compact li span.bullet {
+      color: #f97316;
+      font-size: 0.8rem;
+    }
+
+    /* Slide Header Components */
+    .slide-header {
+      margin-bottom: 1.25rem;
+    }
+
+    .slide-tag {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 0.35rem;
+    }
+
+    .slide-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+
+    .slide-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Slide Content Bodies */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    /* Simple Info Box */
+    .box {
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.4rem;
+      transition: transform 0.2s ease;
+    }
+
+    .box.highlight {
+      background: #fff8f5;
+      border-color: #fdba74;
+    }
+
+    .box-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .box-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0.35rem;
+    }
+
+    .box-text {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .box-list {
+      list-style: none;
+      margin-top: 0.5rem;
+    }
+
+    .box-list li {
+      position: relative;
+      padding-left: 1.2rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .box-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Compact Table */
+    .simple-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .simple-table th, .simple-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .simple-table th {
+      background: var(--card-subtle);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    /* Single Paragraph Conclusion Box */
+    .conclusion-box {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 16px;
+      padding: 2.2rem 2.8rem;
+      text-align: center;
+      margin: auto 0;
+    }
+
+    .conclusion-text {
+      font-size: 1.3rem;
+      line-height: 1.75;
+      color: #ffedd5;
+      font-weight: 400;
+    }
+
+    .conclusion-text strong {
+      color: #facc15;
+      font-weight: 700;
+    }
+
+    /* Slide Footer */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 1.25rem;
+    }
+
+    /* Bottom Navigator Bar */
+    footer.bottom-bar {
+      height: 70px;
+      background: rgba(28, 25, 23, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 20;
+    }
+
+    .nav-hints {
+      font-size: 0.82rem;
+      color: #a8a29e;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-nav {
+      background: var(--primary);
+      border: none;
+      color: #ffffff;
+      padding: 0.6rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-nav:disabled {
+      background: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.4);
+      cursor: not-allowed;
+    }
+
+    .dots-container {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dot.active {
+      background: var(--primary);
+      width: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .slide-card {
+        padding: 1.5rem;
+        height: 85vh;
+      }
+      .slide-title {
+        font-size: 1.6rem;
+      }
+      .grid-2, .grid-3, .team-list-compact {
+        grid-template-columns: 1fr;
+      }
+      .conclusion-box {
+        padding: 1.5rem;
+      }
+      .conclusion-text {
+        font-size: 1.05rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-viewport">
+    
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <span>🍳 Dapur Nusa</span>
+        <span class="slide-badge">PRESENTASI PROYEK</span>
+      </div>
+      <div class="top-actions">
+        <span class="counter-pill" id="counterDisplay">Slide 1 dari 8</span>
+        <button class="icon-btn" onclick="toggleFullScreen()">⛶ Layar Penuh</button>
+        <a href="Presentasi_Dapur_Nusa_Kelompok.pptx" class="icon-btn" download>📥 Unduh PPTX</a>
+      </div>
+    </header>
+
+    <!-- Slide Stage -->
+    <main class="slide-stage">
+
+      <!-- SLIDE 1: COVER & NAMA KELOMPOK (LIST RINGKAS & KECIL) -->
+      <div class="slide-card hero active" data-slide="1">
+        <div class="slide-header">
+          <div class="slide-tag">PRESENTASI PROYEK WEBSITE</div>
+          <h1 class="slide-title">🍳 Dapur Nusa</h1>
+          <p class="slide-desc">Platform Katalog & Manajemen Resep Masakan Nusantara Berbasis DATH Stack.</p>
+        </div>
+        <div class="slide-body">
+          <p style="font-size: 1.05rem; line-height: 1.6; color: #ffedd5;">
+            Aplikasi web kuliner interaktif yang dibangun menggunakan arsitektur <strong>Django + Alpine.js + Tailwind CSS + HTMX</strong>. Ringan, responsif, dan hemat data tanpa kerumitan SPA konvensional.
+          </p>
+
+          <!-- List Nama Anggota Ukuran Kecil -->
+          <div class="team-box-compact">
+            <div class="team-title-compact">👥 Anggota Kelompok:</div>
+            <ul class="team-list-compact">
+              <li><span class="bullet">▸</span> Ali Alhafidz</li>
+              <li><span class="bullet">▸</span> Aldiana Risman</li>
+              <li><span class="bullet">▸</span> Riski Hidayat</li>
+              <li><span class="bullet">▸</span> Miqdad Alfarizi</li>
+            </ul>
+          </div>
+        </div>
+        <div class="slide-footer" style="border-color: rgba(255,255,255,0.2); color: #fed7aa;">
+          <span>Gunakan tombol panah ➔ atau Spasi untuk berpindah slide</span>
+          <span>Slide 1 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: LATAR BELAKANG -->
+      <div class="slide-card" data-slide="2">
+        <div class="slide-header">
+          <div class="slide-tag">02 • LATAR BELAKANG</div>
+          <h2 class="slide-title">Latar Belakang & Solusi</h2>
+          <p class="slide-desc">Mengapa Dapur Nusa dibangun untuk membantu koki rumahan dan pecinta kuliner.</p>
+        </div>
+        <div class="slide-body">
+          <div class="grid-3">
+            <div class="box highlight">
+              <div class="box-icon">⚠️</div>
+              <h3 class="box-title">Masalah</h3>
+              <ul class="box-list">
+                <li>Resep tradisional takarannya sering tidak baku ("secukupnya").</li>
+                <li>Sulit menghitung ulang porsi jika ingin masak untuk porsi besar.</li>
+                <li>Pencatatan belanja bahan masakan masih serba manual.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <div class="box-icon">🐌</div>
+              <h3 class="box-title">Kendala Web Lain</h3>
+              <ul class="box-list">
+                <li>Banyak website resep terlalu berat karena library JS berlebih.</li>
+                <li>Seringkali lambat dibuka di ponsel dengan sinyal standar.</li>
+                <li>Tampilan penuh iklan yang mengganggu langkah memasak.</li>
+              </ul>
+            </div>
+            <div class="box highlight">
+              <div class="box-icon">💡</div>
+              <h3 class="box-title">Solusi Dapur Nusa</h3>
+              <ul class="box-list">
+                <li>Katalog resep terstruktur dengan takaran dan langkah jelas.</li>
+                <li><strong>Kalkulator Porsi Dinamis</strong> otomatis seketika.</li>
+                <li><strong>Daftar Belanja Cerdas</strong> langsung dari bahan resep.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 2 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: STACK TEKNOLOGI -->
+      <div class="slide-card" data-slide="3">
+        <div class="slide-header">
+          <div class="slide-tag">03 • ARSITEKTUR TEKNOLOGI</div>
+          <h2 class="slide-title">Stack Teknologi: DATH Stack</h2>
+          <p class="slide-desc">Kombinasi 4 pilar teknologi yang menghasilkan website cepat, modern, dan ringan.</p>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">BACKEND & KEAMANAN</div>
+              <h3 class="box-title">Django 5.2 (Python)</h3>
+              <p class="box-text">Menyediakan database ORM yang kuat, sistem user & hak akses, serta proteksi keamanan bawaan (CSRF, XSS, SQL Injection).</p>
+            </div>
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--secondary);">INTERAKSI TANPA RELOAD</div>
+              <h3 class="box-title">HTMX 2.x</h3>
+              <p class="box-text">Memungkinkan pencarian langsung (*live search*), filter kategori, dan simpan favorit secara instan tanpa perlu memuat ulang seluruh halaman.</p>
+            </div>
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-blue);">REAKTIVITAS MIKRO</div>
+              <h3 class="box-title">Alpine.js 3.x</h3>
+              <p class="box-text">Mengatur slider porsi piring real-time, menu navigasi mobile, dan jendela popup (modal) langsung di browser tanpa kompilasi.</p>
+            </div>
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-green);">TAMPILAN MODERN</div>
+              <h3 class="box-title">Tailwind CSS (Material 3)</h3>
+              <p class="box-text">Desain bersih dan konsisten berbasis Material Design 3 dengan palet warna hangat khas rempah nusantara yang ramah pengguna.</p>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 3 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: FITUR UTAMA -->
+      <div class="slide-card" data-slide="4">
+        <div class="slide-header">
+          <div class="slide-tag">04 • FITUR UTAMA</div>
+          <h2 class="slide-title">Fitur Unggulan Pengguna</h2>
+          <p class="slide-desc">Fitur interaktif yang mempermudah seluruh proses memasak dari awal hingga akhir.</p>
+        </div>
+        <div class="slide-body">
+          <div class="grid-3">
+            <div class="box">
+              <div class="box-icon">🔍</div>
+              <h3 class="box-title">Cari & Filter Cepat</h3>
+              <p class="box-text">Filter instan berdasarkan bahan, asal daerah, durasi memasak, dan tingkat kesulitan.</p>
+            </div>
+            <div class="box">
+              <div class="box-icon">⚖️</div>
+              <h3 class="box-title">Porsi Dinamis</h3>
+              <p class="box-text">Kalkulasi otomatis jumlah takaran bahan (gram, sendok) saat jumlah piring diubah.</p>
+            </div>
+            <div class="box">
+              <div class="box-icon">🛒</div>
+              <h3 class="box-title">Daftar Belanja</h3>
+              <p class="box-text">Kirim bahan ke shopping list pribadi dengan penggabungan item otomatis (*auto-merge*).</p>
+            </div>
+            <div class="box">
+              <div class="box-icon">❤️</div>
+              <h3 class="box-title">Resep Favorit</h3>
+              <p class="box-text">Simpan resep kesukaan cukup dengan satu klik tanpa gangguan refresh halaman.</p>
+            </div>
+            <div class="box">
+              <div class="box-icon">🥗</div>
+              <h3 class="box-title">Estimasi Gizi</h3>
+              <p class="box-text">Informasi kalori, protein, lemak, dan karbohidrat per porsi untuk panduan hidup sehat.</p>
+            </div>
+            <div class="box">
+              <div class="box-icon">✍️</div>
+              <h3 class="box-title">Tulis & Berbagi</h3>
+              <p class="box-text">Pengguna dapat berkontribusi resep keluarga dengan form input bahan dan foto yang rapi.</p>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 4 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: MODERASI & ADMIN -->
+      <div class="slide-card" data-slide="5">
+        <div class="slide-header">
+          <div class="slide-tag">05 • TATA KELOLA KONTEN</div>
+          <h2 class="slide-title">Moderasi Resep & Dashboard Admin</h2>
+          <p class="slide-desc">Menjaga standar kualitas resep komunitas sebelum dipublikasikan.</p>
+        </div>
+        <div class="slide-body">
+          <div class="grid-2">
+            <div class="box highlight">
+              <h3 class="box-title">🚦 Alur Moderasi (Status Workflow)</h3>
+              <ul class="box-list" style="margin-top: 0.75rem;">
+                <li><strong>Status PENDING:</strong> Resep yang baru dibuat pengguna tidak langsung tampil ke publik.</li>
+                <li><strong>Setujui (Approve):</strong> Admin memverifikasi dan resep resmi berstatus <em>PUBLISHED</em>.</li>
+                <li><strong>Tolak (Reject):</strong> Admin menolak dengan wajib menyertakan alasan penolakan yang jelas.</li>
+                <li><strong>Transparansi Penulis:</strong> Penulis tetap bisa melihat resep miliknya dan membaca catatan perbaikan.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3 class="box-title">📊 Dashboard Administrator</h3>
+              <ul class="box-list" style="margin-top: 0.75rem;">
+                <li>Ringkasan metrik total resep aktif, resep pending, dan jumlah pengguna.</li>
+                <li>Aksi cepat moderasi langsung dari tabel review.</li>
+                <li>Pengelolaan kategori masakan nusantara dan tag pencarian.</li>
+                <li>Semua aksi moderasi dilindungi metode aman POST + token CSRF.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 5 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: DATABASE -->
+      <div class="slide-card" data-slide="6">
+        <div class="slide-header">
+          <div class="slide-tag">06 • DATABASE & MODEL DATA</div>
+          <h2 class="slide-title">Struktur Database Relasional</h2>
+          <p class="slide-desc">Desain tabel yang rapi menjamin data resep tersimpan terstruktur dan konsisten.</p>
+        </div>
+        <div class="slide-body">
+          <table class="simple-table">
+            <thead>
+              <tr>
+                <th>Model / Tabel</th>
+                <th>Fungsi Utama</th>
+                <th>Relasi Database</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>User & UserProfile</strong></td>
+                <td>Akun pengguna & peran (*Role Admin / Pengguna Biasa*).</td>
+                <td>1-to-1 via Django Signals</td>
+              </tr>
+              <tr>
+                <td><strong>Category & Tag</strong></td>
+                <td>Klasifikasi daerah nusantara dan ciri khas masakan.</td>
+                <td>Many-to-Many ke Recipe</td>
+              </tr>
+              <tr>
+                <td><strong>Recipe (Utama)</strong></td>
+                <td>Judul, slug unik, waktu persiapan, porsi, status publikasi.</td>
+                <td>Foreign Key ke User & Category</td>
+              </tr>
+              <tr>
+                <td><strong>Ingredient & Step</strong></td>
+                <td>Daftar bahan (dengan takaran angka) dan urutan langkah masak.</td>
+                <td>Foreign Key ke Recipe (Cascade)</td>
+              </tr>
+              <tr>
+                <td><strong>ShoppingList</strong></td>
+                <td>Daftar belanja bahan milik pengguna dengan checklist centang.</td>
+                <td>Foreign Key ke User</td>
+              </tr>
+              <tr>
+                <td><strong>Favorite</strong></td>
+                <td>Penyimpanan resep yang disukai pengguna.</td>
+                <td>Unique Together (User, Recipe)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 6 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: ROADMAP (SLIDE KEAMANAN SEBELUMNYA TELAH DIHAPUS) -->
+      <div class="slide-card" data-slide="7">
+        <div class="slide-header">
+          <div class="slide-tag">07 • ROADMAP</div>
+          <h2 class="slide-title">Rencana Pengembangan Masa Depan</h2>
+          <p class="slide-desc">Inovasi lanjutan untuk memperluas manfaat aplikasi bagi pengguna.</p>
+        </div>
+        <div class="slide-body">
+          <div class="grid-3">
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">TAHAP 1</div>
+              <h3 class="box-title">Interaksi Komunitas</h3>
+              <ul class="box-list">
+                <li>Fitur rating bintang & testimoni resep.</li>
+                <li>Unggah foto hasil memasak (*Cooksnap*).</li>
+                <li>Koleksi buku resep kustom pengguna.</li>
+              </ul>
+            </div>
+            <div class="box highlight">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--secondary);">TAHAP 2</div>
+              <h3 class="box-title">AI Smart Kitchen</h3>
+              <ul class="box-list">
+                <li>Rekomendasi resep dari bahan sisa kulkas.</li>
+                <li>Ekstraksi teks resep dari foto buku masak.</li>
+                <li>Timer pintar terhubung per langkah masak.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-green);">TAHAP 3</div>
+              <h3 class="box-title">Akses Fleksibel</h3>
+              <ul class="box-list">
+                <li>Aplikasi PWA dengan mode offline tanpa internet.</li>
+                <li>Kirim daftar belanja langsung ke WhatsApp.</li>
+                <li>Dukungan multi-bahasa untuk turis asing.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>Dapur Nusa Presentation</span>
+          <span>Slide 7 / 8</span>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: KESIMPULAN SATU PARAGRAF -->
+      <div class="slide-card hero" data-slide="8">
+        <div class="slide-header">
+          <div class="slide-tag">08 • KESIMPULAN PROYEK</div>
+          <h2 class="slide-title">Kesimpulan</h2>
+          <p class="slide-desc">Dapur Nusa: Menjaga Warisan Rasa dengan Sentuhan Teknologi Cerdas.</p>
+        </div>
+        <div class="slide-body">
+          <div class="conclusion-box">
+            <p class="conclusion-text">
+              <strong>Dapur Nusa</strong> berhasil menghadirkan platform kuliner nusantara yang <strong>ringan, cepat, dan interaktif</strong> berkat perpaduan arsitektur <strong>DATH Stack</strong> (Django, Alpine.js, Tailwind CSS, HTMX), dilengkapi fitur cerdas seperti kalkulator porsi dinamis dan daftar belanja otomatis yang memberikan solusi praktis, efisien, serta pengalaman memasak yang menyenangkan bagi seluruh keluarga.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 1.5rem;">
+            <h3 style="font-size: 1.8rem; color: #facc15; font-family: 'Playfair Display', serif; margin-bottom: 0.2rem;">Terima Kasih!</h3>
+            <p style="color: #ffedd5; font-size: 0.95rem;">Ada pertanyaan atau tanggapan untuk kelompok kami?</p>
+          </div>
+        </div>
+        <div class="slide-footer" style="border-color: rgba(255,255,255,0.2); color: #fed7aa;">
+          <span>Dapur Nusa • Akhir Presentasi</span>
+          <span>Slide 8 / 8</span>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Bottom Navigator Controls -->
+    <footer class="bottom-bar">
+      <div class="nav-hints">
+        Gunakan tombol <strong>← / →</strong> pada keyboard
+      </div>
+
+      <div class="dots-container" id="dotsContainer">
+        <!-- Dots injected by JS -->
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn-nav" id="prevBtn" onclick="prevSlide()" disabled>← Sebelumnya</button>
+        <button class="btn-nav" id="nextBtn" onclick="nextSlide()">Berikutnya →</button>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    const slides = document.querySelectorAll('.slide-card');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counterDisplay = document.getElementById('counterDisplay');
+    const dotsContainer = document.getElementById('dotsContainer');
+
+    // Build pagination dots
+    for (let i = 1; i <= totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = `dot ${i === 1 ? 'active' : ''}`;
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+
+    const dots = document.querySelectorAll('.dot');
+
+    function updateSlide() {
+      slides.forEach((slide) => {
+        const slideNum = parseInt(slide.getAttribute('data-slide'), 10);
+        if (slideNum === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      // Update dots
+      dots.forEach((dot, idx) => {
+        if (idx + 1 === currentSlide) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+
+      // Update counter and buttons
+      counterDisplay.textContent = `Slide ${currentSlide} dari ${totalSlides}`;
+      prevBtn.disabled = currentSlide === 1;
+      
+      if (currentSlide === totalSlides) {
+        nextBtn.textContent = 'Ulangi ↺';
+      } else {
+        nextBtn.textContent = 'Berikutnya →';
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+      } else {
+        currentSlide = 1; // loop back to first slide
+      }
+      updateSlide();
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(num) {
+      if (num >= 1 && num <= totalSlides) {
+        currentSlide = num;
+        updateSlide();
+      }
+    }
+
+    // Keyboard support
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    // Fullscreen toggle helper
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% if errors or form.non_field_errors or formset.non_form_errors %}
+<div class="p-4 mb-4 rounded-2xl bg-tertiary-50 text-tertiary-800 border border-tertiary-200 text-sm shadow-sm" role="alert">
+    <div class="flex items-center gap-2 font-semibold mb-1">
+        <span class="material-symbols-outlined text-lg">error</span>
+        <span>Periksa kembali isian formulir:</span>
+    </div>
+    <ul class="list-disc list-inside text-xs space-y-1 mt-2">
+        {% if form.non_field_errors %}
+            {% for err in form.non_field_errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+        {% endif %}
+        {% if formset and formset.non_form_errors %}
+            {% for err in formset.non_form_errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+        {% endif %}
+        {% if errors %}
+            {% for err in errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+</div>
+{% endif %}

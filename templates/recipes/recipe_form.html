@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — Dapur Nusa{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-m3-1">
+        <h1 class="font-serif font-bold text-2xl sm:text-3xl text-stone-900 mb-2">{{ title }}</h1>
+        <p class="text-xs sm:text-sm text-stone-500 mb-6">
+            Pastikan takaran bahan terisi dengan format numerik agar porsi dinamis dapat dikalkulasi otomatis.
+        </p>
+
+        {% include 'includes/form_errors.html' with form=form %}
+        {% include 'includes/form_errors.html' with formset=formset_ingredients %}
+        {% include 'includes/form_errors.html' with formset=formset_steps %}
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-8" 
+              x-data="{
+                  ingCount: {{ formset_ingredients.total_form_count }},
+                  stepCount: {{ formset_steps.total_form_count }},
+                  addIngredient() {
+                      let template = this.$refs.ingEmpty.innerHTML.replace(/__prefix__/g, this.ingCount);
+                      this.$refs.ingList.insertAdjacentHTML('beforeend', template);
+                      this.ingCount++;
+                      document.getElementById('id_ingredients-TOTAL_FORMS').value = this.ingCount;
+                  },
+                  addStep() {
+                      let template = this.$refs.stepEmpty.innerHTML.replace(/__prefix__/g, this.stepCount);
+                      this.$refs.stepList.insertAdjacentHTML('beforeend', template);
+                      this.stepCount++;
+                      document.getElementById('id_steps-TOTAL_FORMS').value = this.stepCount;
+                      this.renumberSteps();
+                  },
+                  renumberSteps() {
+                      let inputs = this.$refs.stepList.querySelectorAll('input[name$=\"-step_number\"]');
+                      inputs.forEach((input, index) => {
+                          input.value = index + 1;
+                      });
+                  }
+              }">
+            {% csrf_token %}
+            
+            <!-- 1. Informasi Utama -->
+            <div class="space-y-4">
+                <h3 class="font-semibold text-stone-800 text-sm uppercase tracking-wider pb-2 border-b border-stone-200">1. Informasi Utama Resep</h3>
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Judul Resep</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.category.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Kategori</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.category.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.difficulty.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Tingkat Kesulitan</label>
+                        {{ form.difficulty }}
+                        {% if form.difficulty.errors %}
+                        <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.difficulty.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Tag Checkbox Chips U4 -->
+                <div>
+                    <label class="block text-xs font-semibold text-stone-700 uppercase mb-2">Tag Masakan</label>
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag_choice in form.tags %}
+                        <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 bg-surface-50 hover:bg-stone-100 text-xs font-medium text-stone-700 transition select-none has-[:checked]:bg-primary-600 has-[:checked]:text-white has-[:checked]:border-primary-600">
+                            {{ tag_choice.tag }}
+                            <span>{{ tag_choice.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label for="{{ form.default_servings.id_for_label }}" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Porsi Bawaan</label>
+                        {{ form.default_servings }}
+                        {% if form.default_servings.errors %}
+                        <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.default_servings.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.prep_time_minutes.id_for_label }}" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Waktu Siap (mnt)</label>
+                        {{ form.prep_time_minutes }}
+                        {% if form.prep_time_minutes.errors %}
+                        <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.prep_time_minutes.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.cook_time_minutes.id_for_label }}" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Waktu Masak (mnt)</label>
+                        {{ form.cook_time_minutes }}
+                        {% if form.cook_time_minutes.errors %}
+                        <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.cook_time_minutes.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.image.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Foto Masakan (Maks. 2 MB)</label>
+                    {% if recipe and recipe.image %}
+                    <div class="mb-2 flex items-center gap-3">
+                        <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="w-16 h-16 rounded-xl object-cover border border-stone-200">
+                        <span class="text-xs text-stone-500">Foto saat ini: {{ recipe.image.name }}</span>
+                    </div>
+                    {% endif %}
+                    {{ form.image }}
+                    {% if form.image.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.image.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.description.id_for_label }}" class="block text-xs font-semibold text-stone-700 uppercase mb-1">Deskripsi Singkat</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <p class="text-xs text-tertiary-700 mt-1" role="alert">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 2. Formset Bahan-Bahan Terstruktur Dinamis U4 -->
+            <div class="space-y-4 pt-4 border-t border-stone-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-stone-800 text-sm uppercase tracking-wider">2. Bahan-Bahan Masakan (Terstruktur)</h3>
+                        <p class="text-xs text-stone-500">Masukkan jumlah numerik (misal: 500, 0.25) dan satuan standar (gram, ml, sdm).</p>
+                    </div>
+                    <button type="button" @click="addIngredient()" class="px-3.5 py-1.5 rounded-full bg-secondary-100 hover:bg-secondary-200 text-secondary-900 text-xs font-semibold flex items-center gap-1 transition">
+                        <span class="material-symbols-outlined text-sm">add</span> Tambah Bahan
+                    </button>
+                </div>
+                
+                {{ formset_ingredients.management_form }}
+                <div class="space-y-2" x-ref="ingList">
+                    <div class="flex items-center gap-2 text-xs font-semibold text-stone-500 uppercase px-1">
+                        <span class="w-14 text-center">Urutan</span>
+                        <span class="w-24">Jumlah</span>
+                        <span class="w-24">Satuan</span>
+                        <span class="flex-1">Nama Bahan</span>
+                        <span class="w-32">Keterangan</span>
+                        <span class="w-12 text-center">Aksi</span>
+                    </div>
+                    {% for form_ing in formset_ingredients %}
+                    <div class="flex items-center gap-2">
+                        {{ form_ing.id }}
+                        {{ form_ing.sort_order }}
+                        {{ form_ing.amount }}
+                        {{ form_ing.unit }}
+                        {{ form_ing.item_name }}
+                        {{ form_ing.notes }}
+                        <div class="w-12 text-center">
+                            {% if formset_ingredients.can_delete and form_ing.instance.pk %}
+                                <label class="text-[11px] text-tertiary-600 hover:underline cursor-pointer flex items-center justify-center gap-0.5">
+                                    {{ form_ing.DELETE }} Hapus
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Template baris bahan kosong untuk Alpine -->
+                <div x-ref="ingEmpty" class="hidden">
+                    <div class="flex items-center gap-2">
+                        {{ formset_ingredients.empty_form.id }}
+                        {{ formset_ingredients.empty_form.sort_order }}
+                        {{ formset_ingredients.empty_form.amount }}
+                        {{ formset_ingredients.empty_form.unit }}
+                        {{ formset_ingredients.empty_form.item_name }}
+                        {{ formset_ingredients.empty_form.notes }}
+                        <div class="w-12 text-center text-xs text-stone-400">Baru</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Formset Langkah-Langkah Memasak Dinamis U4 -->
+            <div class="space-y-4 pt-4 border-t border-stone-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-stone-800 text-sm uppercase tracking-wider">3. Langkah-Langkah Memasak</h3>
+                        <p class="text-xs text-stone-500">Uraikan langkah berurutan secara jelas.</p>
+                    </div>
+                    <button type="button" @click="addStep()" class="px-3.5 py-1.5 rounded-full bg-secondary-100 hover:bg-secondary-200 text-secondary-900 text-xs font-semibold flex items-center gap-1 transition">
+                        <span class="material-symbols-outlined text-sm">add</span> Tambah Langkah
+                    </button>
+                </div>
+
+                {{ formset_steps.management_form }}
+                <div class="space-y-3" x-ref="stepList">
+                    {% for form_step in formset_steps %}
+                    <div class="p-3 bg-surface-50 rounded-2xl border border-stone-200 space-y-2">
+                        {{ form_step.id }}
+                        <div class="flex items-start gap-3">
+                            <div class="w-14">
+                                <label class="text-[10px] text-stone-500 block text-center uppercase font-bold">Langkah</label>
+                                {{ form_step.step_number }}
+                            </div>
+                            <div class="flex-1">
+                                {{ form_step.instruction }}
+                            </div>
+                            {% if formset_steps.can_delete and form_step.instance.pk %}
+                            <label class="text-xs text-tertiary-600 flex items-center gap-1 mt-2 cursor-pointer">
+                                {{ form_step.DELETE }} Hapus
+                            </label>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center gap-3 pl-16">
+                            {% if form_step.instance.step_image %}
+                            <img src="{{ form_step.instance.step_image.url }}" alt="Langkah" class="w-12 h-12 rounded-lg object-cover border border-stone-200">
+                            {% endif %}
+                            <div>
+                                <label class="block text-[10px] uppercase font-semibold text-stone-500">Foto Langkah (opsional, maks. 2 MB)</label>
+                                {{ form_step.step_image }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Template langkah kosong untuk Alpine -->
+                <div x-ref="stepEmpty" class="hidden">
+                    <div class="p-3 bg-surface-50 rounded-2xl border border-stone-200 space-y-2">
+                        {{ formset_steps.empty_form.id }}
+                        <div class="flex items-start gap-3">
+                            <div class="w-14">
+                                <label class="text-[10px] text-stone-500 block text-center uppercase font-bold">Langkah</label>
+                                {{ formset_steps.empty_form.step_number }}
+                            </div>
+                            <div class="flex-1">
+                                {{ formset_steps.empty_form.instruction }}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 pl-16">
+                            <div>
+                                <label class="block text-[10px] uppercase font-semibold text-stone-500">Foto Langkah (opsional, maks. 2 MB)</label>
+                                {{ formset_steps.empty_form.step_image }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Bagian Gizi Opsional U4 -->
+            <div class="space-y-4 pt-4 border-t border-stone-200">
+                <h3 class="font-semibold text-stone-800 text-sm uppercase tracking-wider">4. Perkiraan Gizi (Opsional)</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Kalori (kkal)</label>
+                        {{ nutrition_form.calories }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Protein (g)</label>
+                        {{ nutrition_form.protein_grams }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Karbohidrat (g)</label>
+                        {{ nutrition_form.carbs_grams }}
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">Lemak (g)</label>
+                        {{ nutrition_form.fat_grams }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Submit Dinamis U4 -->
+            <div class="pt-6 border-t border-stone-200 flex justify-end gap-3">
+                <a href="{% url 'recipes:home' %}" class="px-5 py-2.5 rounded-full border border-stone-300 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition">
+                    Batal
+                </a>
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-sm transition focus-visible:ring-2 focus-visible:ring-primary-600">
+                    {% if recipe %}
+                        Simpan Perubahan
+                    {% elif user.is_admin_role %}
+                        Simpan & Terbitkan Resep
+                    {% else %}
+                        Kirim untuk Ditinjau
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

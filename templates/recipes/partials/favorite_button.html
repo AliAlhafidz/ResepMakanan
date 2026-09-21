@@ -1,0 +1,11 @@
+<button 
+    hx-post="{% url 'recipes:toggle_favorite' recipe.id %}{% if remove_card %}?remove_card=1{% endif %}"
+    {% if remove_card %}hx-target="closest [data-recipe-card]" hx-swap="outerHTML swap:200ms"{% else %}hx-swap="outerHTML"{% endif %}
+    type="button"
+    aria-label="{% if is_favorited %}Hapus dari Favorit{% else %}Simpan ke Favorit{% endif %}"
+    class="p-2.5 rounded-full transition-all duration-200 shadow-sm flex items-center justify-center focus-visible:ring-2 focus-visible:ring-tertiary-600 {% if is_favorited %}bg-tertiary-50 text-tertiary-600 hover:bg-tertiary-100 border border-tertiary-200{% else %}bg-white/90 backdrop-blur-sm text-stone-500 hover:text-tertiary-600 hover:bg-white border border-stone-200{% endif %}"
+    title="{% if is_favorited %}Hapus dari Favorit{% else %}Simpan ke Favorit{% endif %}">
+    <span class="material-symbols-outlined text-xl {% if is_favorited %}material-symbols-fill text-tertiary-600{% endif %}">
+        favorite
+    </span>
+</button>

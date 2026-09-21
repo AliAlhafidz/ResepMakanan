@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% load l10n %}
+
+{% block title %}{{ recipe.title }} — Resep Dapur Nusa{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto">
+    <!-- Breadcrumb no-print -->
+    <nav class="flex items-center gap-2 text-xs text-stone-500 no-print">
+        <a href="{% url 'recipes:home' %}" class="hover:text-primary-700">Beranda</a>
+        <span>/</span>
+        <a href="{% url 'recipes:list' %}?category={{ recipe.category.slug }}" class="hover:text-primary-700">{{ recipe.category.name }}</a>
+        <span>/</span>
+        <span class="text-stone-800 font-medium truncate">{{ recipe.title }}</span>
+    </nav>
+
+    <!-- Banner Status Khusus Penulis / Admin K4, U6 -->
+    {% if recipe.status != 'PUBLISHED' %}
+    <div class="p-4 rounded-2xl border text-sm font-medium shadow-sm {% if recipe.status == 'PENDING' %}bg-secondary-50 border-secondary-300 text-secondary-900{% elif recipe.status == 'REJECTED' %}bg-tertiary-50 border-tertiary-300 text-tertiary-900{% else %}bg-stone-100 border-stone-300 text-stone-800{% endif %}" role="alert">
+        <div class="flex items-center gap-2 font-bold">
+            <span class="material-symbols-outlined">
+                {% if recipe.status == 'PENDING' %}hourglass_top{% elif recipe.status == 'REJECTED' %}cancel{% else %}draft{% endif %}
+            </span>
+            <span>Status Resep: {{ recipe.get_status_display }}</span>
+        </div>
+        <p class="text-xs mt-1">
+            {% if recipe.status == 'PENDING' %}
+                Resep ini sedang dalam antrean moderasi oleh Administrator sebelum dipublikasikan ke umum.
+            {% elif recipe.status == 'REJECTED' %}
+                Resep ini ditolak dengan alasan: <strong>{{ recipe.rejection_reason|default:"Belum memenuhi panduan komunitas." }}</strong>. Silakan perbaiki dan simpan ulang untuk mengajukan kembali.
+            {% else %}
+                Resep ini berstatus draf pribadi.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Header Section: Judul, Meta & Foto -->
+    <div class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-m3-1">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 sm:p-8">
+            <div class="flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-3 py-1 bg-primary-50 text-primary-800 rounded-full text-xs font-semibold">
+                            {{ recipe.category.name }}
+                        </span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium {% if recipe.difficulty == 'MUDAH' %}bg-primary-100 text-primary-800{% elif recipe.difficulty == 'SEDANG' %}bg-secondary-100 text-secondary-800{% else %}bg-tertiary-100 text-tertiary-800{% endif %}">
+                            {{ recipe.get_difficulty_display }}
+                        </span>
+                    </div>
+
+                    <h1 class="font-serif font-bold text-2xl sm:text-4xl text-stone-950 leading-tight">
+                        {{ recipe.title }}
+                    </h1>
+                    <p class="text-stone-600 text-sm mt-3 leading-relaxed">
+                        {{ recipe.description|linebreaksbr }}
+                    </p>
+
+                    <!-- Info Penulis -->
+                    <div class="flex items-center gap-3 mt-6 pt-4 border-t border-stone-100">
+                        <div class="w-9 h-9 rounded-full bg-primary-700 text-white font-bold flex items-center justify-center text-sm">
+                            {{ recipe.author.username|slice:":1"|upper }}
+                        </div>
+                        <div class="text-xs">
+                            <span class="text-stone-500 block">Dibuat oleh</span>
+                            <span class="font-semibold text-stone-800">{{ recipe.author.profile.display_name|default:recipe.author.username }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons: Favorite, Edit, Print, Share (no-print) U6 -->
+                <div class="mt-6 flex flex-wrap items-center gap-3 no-print" x-data="{ copied: false }">
+                    {% if recipe.status == 'PUBLISHED' %}
+                        {% include 'recipes/partials/favorite_button.html' with is_favorited=is_favorited recipe=recipe %}
+                    {% endif %}
+
+                    {% if user.is_authenticated and user == recipe.author or user.is_admin_role %}
+                    <a href="{% url 'recipes:edit' slug=recipe.slug %}" class="px-4 py-2.5 rounded-full border border-stone-300 hover:bg-stone-50 text-xs font-semibold text-stone-700 flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-primary-600">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                        Edit Resep
+                    </a>
+                    {% endif %}
+
+                    <button 
+                        type="button" 
+                        onclick="window.print()" 
+                        class="p-2.5 rounded-full border border-stone-300 hover:bg-stone-50 text-stone-600 transition flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary-600"
+                        title="Cetak Resep"
+                        aria-label="Cetak Resep">
+                        <span class="material-symbols-outlined text-lg">print</span>
+                    </button>
+
+                    <button 
+                        type="button" 
+                        @click="
+                            if (navigator.share) {
+                                navigator.share({ title: '{{ recipe.title }}', text: 'Resep {{ recipe.title }} di Dapur Nusa', url: window.location.href });
+                            } else {
+                                navigator.clipboard.writeText(window.location.href);
+                                copied = true;
+                                setTimeout(() => copied = false, 2500);
+                            }
+                        " 
+                        class="px-4 py-2.5 rounded-full border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs font-semibold flex items-center gap-1.5 transition focus-visible:ring-2 focus-visible:ring-primary-600"
+                        title="Bagikan Resep"
+                        aria-label="Bagikan Resep">
+                        <span class="material-symbols-outlined text-base" x-text="copied ? 'check' : 'share'">share</span>
+                        <span x-text="copied ? 'Tautan Disalin!' : 'Bagikan'">Bagikan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recipe Big Image -->
+            <div class="relative h-64 sm:h-80 md:h-full rounded-2xl overflow-hidden bg-stone-100">
+                {% if recipe.image %}
+                    <img src="{{ recipe.image.url }}" alt="{{ recipe.title }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex flex-col items-center justify-center text-stone-400">
+                        <span class="material-symbols-outlined text-6xl">restaurant</span>
+                        <span class="text-xs mt-2">Dapur Nusa</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metric Stat Strip -->
+        <div class="grid grid-cols-3 border-t border-stone-200 bg-surface-100 divide-x divide-stone-200 text-center py-4">
+            <div>
+                <span class="block text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Persiapan</span>
+                <span class="font-serif font-bold text-base sm:text-lg text-stone-900 mt-0.5 block">{{ recipe.prep_time_minutes }} mnt</span>
+            </div>
+            <div>
+                <span class="block text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Memasak</span>
+                <span class="font-serif font-bold text-base sm:text-lg text-stone-900 mt-0.5 block">{{ recipe.cook_time_minutes }} mnt</span>
+            </div>
+            <div>
+                <span class="block text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Total Waktu</span>
+                <span class="font-serif font-bold text-base sm:text-lg text-primary-700 mt-0.5 block">{{ recipe.total_time }} mnt</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid: Bahan Dinamis (Alpine.js) & Langkah Memasak -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Kolom Kiri: Bahan dengan Alpine.js Dynamic Servings Scaling U6 -->
+        <div class="lg:col-span-1" x-data="{
+            baseServings: {{ recipe.default_servings|unlocalize }},
+            currentServings: {{ recipe.default_servings|unlocalize }},
+            increment() { if (this.currentServings < 100) this.currentServings++; },
+            decrement() { if (this.currentServings > 1) this.currentServings--; },
+            formatFraction(val) {
+                let rounded = Math.round(val * 100) / 100;
+                let whole = Math.floor(rounded);
+                let remainder = Math.round((rounded - whole) * 100) / 100;
+                let fracStr = '';
+                if (remainder === 0.25) fracStr = '¼';
+                else if (remainder === 0.5) fracStr = '½';
+                else if (remainder === 0.75) fracStr = '¾';
+                
+                if (fracStr) {
+                    return whole > 0 ? `${whole} ${fracStr}` : fracStr;
+                }
+                return rounded.toString().replace('.', ',');
+            },
+            scale(amount, unit) {
+                if (amount === null || amount === undefined || isNaN(amount)) return '';
+                let scaled = (amount / this.baseServings) * this.currentServings;
+                let u = (unit || '').toLowerCase().trim();
+                // Jika satuan gram (g) atau ml dan nilai >= 20, bulatkan ke kelipatan 5 U6
+                if ((u === 'g' || u === 'gram' || u === 'ml') && scaled >= 20) {
+                    scaled = Math.round(scaled / 5) * 5;
+                    return scaled.toString();
+                }
+                return this.formatFraction(scaled);
+            }
+        }">
+            <div class="bg-white rounded-3xl border border-stone-200 p-6 sticky top-24 shadow-m3-1">
+                <!-- Servings Controller -->
+                <div class="flex items-center justify-between pb-4 border-b border-stone-200">
+                    <div>
+                        <h2 class="font-serif font-bold text-lg text-stone-900">Bahan Masakan</h2>
+                        <span class="text-xs text-stone-500">Sesuaikan porsi Anda:</span>
+                    </div>
+                    <!-- Alpine.js Serving Stepper -->
+                    <div class="flex items-center bg-surface-100 rounded-full border border-stone-300 p-1 no-print">
+                        <button type="button" @click="decrement()" aria-label="Kurangi Porsi" class="w-8 h-8 rounded-full bg-white text-stone-700 hover:bg-stone-200 flex items-center justify-center transition shadow-sm focus-visible:ring-2 focus-visible:ring-primary-600" title="Kurangi Porsi">
+                            <span class="material-symbols-outlined text-base">remove</span>
+                        </button>
+                        <span class="px-3 text-sm font-bold text-primary-900" x-text="`${currentServings} Porsi`"></span>
+                        <button type="button" @click="increment()" aria-label="Tambah Porsi" class="w-8 h-8 rounded-full bg-white text-stone-700 hover:bg-stone-200 flex items-center justify-center transition shadow-sm focus-visible:ring-2 focus-visible:ring-primary-600" title="Tambah Porsi">
+                            <span class="material-symbols-outlined text-base">add</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Structured Ingredient List -->
+                <ul class="divide-y divide-stone-100 mt-4 text-sm">
+                    {% for ing in recipe.ingredients.all %}
+                    <li class="py-3 flex items-start justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary-600 flex-shrink-0"></span>
+                            <span class="text-stone-800 font-medium">{{ ing.item_name }}</span>
+                            {% if ing.notes %}
+                            <span class="text-xs text-stone-500">({{ ing.notes }})</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dynamic scaled amount dengan unlocalize U6 -->
+                        <div class="text-right flex-shrink-0 font-semibold text-primary-800">
+                            {% if ing.amount is not None %}
+                                <span x-text="scale({{ ing.amount|unlocalize }}, '{{ ing.unit|default:'' }}')">{{ ing.amount|unlocalize }}</span>
+                            {% endif %}
+                            {% if ing.unit %}
+                                <span class="text-stone-600 font-normal text-xs">{{ ing.unit }}</span>
+                            {% endif %}
+                            {% if ing.amount is None and not ing.unit %}
+                                <span class="text-xs text-stone-500 italic">Secukupnya</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="py-4 text-stone-400 text-xs text-center">Bahan belum diinput.</li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Button Tambah ke Daftar Belanja K1, U6 (Hanya untuk resep PUBLISHED) -->
+                {% if user.is_authenticated and recipe.status == 'PUBLISHED' %}
+                <form action="{% url 'recipes:add_to_shopping' recipe.id %}" method="POST" class="mt-6 pt-4 border-t border-stone-200 no-print">
+                    {% csrf_token %}
+                    <input type="hidden" name="servings" :value="currentServings">
+                    <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-secondary-100 hover:bg-secondary-200 text-secondary-900 font-semibold text-xs flex items-center justify-center gap-2 transition focus-visible:ring-2 focus-visible:ring-secondary-600">
+                        <span class="material-symbols-outlined text-base">playlist_add</span>
+                        Simpan ke Daftar Belanja
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- Nutrisi Ringkas -->
+                {% if nutrition %}
+                <div class="mt-6 p-4 rounded-2xl bg-surface-50 border border-stone-200">
+                    <h4 class="text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">monitoring</span>
+                        Perkiraan Gizi (per porsi)
+                    </h4>
+                    <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                        <div class="bg-white p-2 rounded-xl border border-stone-100">
+                            <span class="block font-bold text-stone-900">{{ nutrition.calories|default:"-" }}</span>
+                            <span class="text-[10px] text-stone-500">Kalori</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-stone-100">
+                            <span class="block font-bold text-stone-900">{{ nutrition.protein_grams|default:"-" }}g</span>
+                            <span class="text-[10px] text-stone-500">Protein</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-stone-100">
+                            <span class="block font-bold text-stone-900">{{ nutrition.carbs_grams|default:"-" }}g</span>
+                            <span class="text-[10px] text-stone-500">Karbo</span>
+                        </div>
+                        <div class="bg-white p-2 rounded-xl border border-stone-100">
+                            <span class="block font-bold text-stone-900">{{ nutrition.fat_grams|default:"-" }}g</span>
+                            <span class="text-[10px] text-stone-500">Lemak</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Langkah-langkah Memasak -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-3xl border border-stone-200 p-6 sm:p-8 shadow-m3-1">
+                <h2 class="font-serif font-bold text-xl sm:text-2xl text-stone-900 mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-600">format_list_numbered</span>
+                    Langkah Memasak
+                </h2>
+
+                <div class="space-y-6">
+                    {% for step in recipe.steps.all %}
+                    <div class="flex items-start gap-4">
+                        <div class="w-8 h-8 rounded-xl bg-primary-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-sm shadow-sm">
+                            {{ step.step_number }}
+                        </div>
+                        <div class="flex-1 pt-1">
+                            <p class="text-stone-800 text-sm sm:text-base leading-relaxed">
+                                {{ step.instruction|linebreaksbr }}
+                            </p>
+                            {% if step.step_image %}
+                            <div class="mt-3 rounded-xl overflow-hidden max-w-sm border border-stone-200">
+                                <img src="{{ step.step_image.url }}" alt="Langkah {{ step.step_number }}" class="w-full h-auto">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-stone-400 text-sm italic">Belum ada langkah instruksi.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Resep Terkait (no-print) -->
+            {% if related_recipes %}
+            <div class="pt-6 no-print">
+                <h3 class="font-serif font-bold text-xl text-stone-900 mb-4">Resep Serupa</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {% for rel in related_recipes %}
+                    <a href="{% url 'recipes:detail' slug=rel.slug %}" class="bg-white p-3 rounded-2xl border border-stone-200 hover:shadow-m3-1 transition group">
+                        <div class="h-28 rounded-xl bg-stone-100 overflow-hidden mb-2">
+                            {% if rel.image %}
+                                <img src="{{ rel.image.url }}" alt="{{ rel.title }}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center text-stone-400">
+                                    <span class="material-symbols-outlined">restaurant</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <h5 class="font-serif font-bold text-xs text-stone-900 group-hover:text-primary-700 transition truncate">{{ rel.title }}</h5>
+                        <span class="text-[11px] text-stone-500">{{ rel.total_time }} menit</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

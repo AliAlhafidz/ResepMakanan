@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+db.sqlite3-journal
+db.sqlite3.bak
+*.log
+local_settings.py
+
+# Lingkungan virtual
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# Media files (upload pengguna — jangan disimpan di repo)
+media/
+
+# Static files yang di-collect
+staticfiles/
+
+# Build & distribusi
+dist/
+build/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Tailwind CSS
+node_modules/
+*.css.map
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Secrets
+*.pem
+*.key
+secrets.json

@@ -1,0 +1,8 @@
+{% for item in items %}
+    {% include 'recipes/partials/shopping_item.html' with item=item %}
+{% empty %}
+<div class="text-center py-10 text-stone-400 col-span-full" role="status">
+    <span class="material-symbols-outlined text-4xl">done_all</span>
+    <p class="text-xs mt-2">Semua item yang dicentang telah dihapus. Daftar belanja kosong.</p>
+</div>
+{% endfor %}

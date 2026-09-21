@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Beranda — Dapur Nusa (Cita Rasa Nusantara){% endblock %}
+
+{% block content %}
+<div class="space-y-12">
+    <!-- Hero / Menu Hari Ini Section -->
+    <section class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-stone-900 text-white p-6 sm:p-10 lg:p-12 shadow-m3-2">
+        <div class="relative z-10 max-w-2xl">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-500/20 border border-secondary-400/30 text-secondary-300 text-xs font-semibold uppercase tracking-wider mb-4">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                Menu Hari Ini
+            </div>
+            <h1 class="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight">
+                Kehangatan Resep Warisan di Dapur Anda
+            </h1>
+            <p class="mt-3 sm:mt-4 text-primary-100 text-sm sm:text-base leading-relaxed">
+                Temukan aneka masakan khas nusantara dengan takaran bahan presisi dan porsi yang dapat diatur otomatis.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="{% url 'recipes:list' %}" class="px-6 py-3 rounded-full bg-secondary-500 hover:bg-secondary-600 text-stone-900 font-bold text-sm shadow-md hover:shadow-lg transition flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-secondary-600">
+                    <span class="material-symbols-outlined">explore</span>
+                    Mulai Jelajah Resep
+                </a>
+                <a href="{% url 'recipes:create' %}" class="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-sm backdrop-blur-sm border border-white/20 transition flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-white">
+                    <span class="material-symbols-outlined">edit</span>
+                    Tulis Resep Sendiri
+                </a>
+            </div>
+        </div>
+
+        <!-- Featured Carousel / Showcase Cards -->
+        {% if featured_recipes %}
+        <div class="mt-8 pt-8 border-t border-white/10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm uppercase tracking-wider font-semibold text-primary-200 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">recommend</span>
+                    Rekomendasi Menu Pilihan Admin
+                </h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for f in featured_recipes %}
+                <a href="{% url 'recipes:detail' slug=f.slug %}" class="group p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 backdrop-blur-md flex items-center gap-3.5 transition">
+                    <div class="w-16 h-16 rounded-xl bg-primary-950/40 overflow-hidden flex-shrink-0">
+                        {% if f.image %}
+                            <img src="{{ f.image.url }}" alt="{{ f.title }}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-primary-200">
+                                <span class="material-symbols-outlined">restaurant</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <span class="text-[10px] font-semibold text-secondary-300 uppercase">{{ f.category.name }}</span>
+                        <h4 class="font-serif font-bold text-sm text-white truncate group-hover:text-secondary-300 transition">{{ f.title }}</h4>
+                        <div class="flex items-center gap-3 text-[11px] text-primary-200 mt-1">
+                            <span>{{ f.total_time }} mnt</span>
+                            <span>•</span>
+                            <span>{{ f.default_servings }} Porsi</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Categories Strip -->
+    {% if categories %}
+    <section>
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-serif font-bold text-xl text-stone-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary-600">category</span>
+                Kategori Masakan
+            </h2>
+            <a href="{% url 'recipes:list' %}" class="text-xs font-semibold text-primary-700 hover:underline">Lihat Semua</a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {% for cat in categories %}
+            <a href="{% url 'recipes:list' %}?category={{ cat.slug }}" class="p-3 rounded-2xl bg-white border border-stone-200 hover:border-primary-500 hover:shadow-m3-1 flex flex-col items-center text-center transition group">
+                <div class="w-10 h-10 rounded-full bg-primary-50 group-hover:bg-primary-600 text-primary-700 group-hover:text-white flex items-center justify-center transition mb-2">
+                    <span class="material-symbols-outlined text-xl">{{ cat.icon_name|default:"restaurant" }}</span>
+                </div>
+                <span class="text-xs font-semibold text-stone-800 line-clamp-1">{{ cat.name }}</span>
+                <span class="text-[10px] text-stone-500 mt-0.5">{{ cat.recipe_count }} resep</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Recent Recipes Section -->
+    <section>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="font-serif font-bold text-2xl text-stone-900 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary-600">local_dining</span>
+                    Resep Masakan Terbaru
+                </h2>
+                <p class="text-xs text-stone-500 mt-1">Inspirasi hidangan lezat yang baru saja dipublikasikan</p>
+            </div>
+            <a href="{% url 'recipes:list' %}" class="inline-flex items-center gap-1 px-4 py-2 rounded-full border border-stone-300 hover:bg-stone-50 text-xs font-semibold text-stone-700 transition">
+                Jelajah Lengkap
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+
+        {% include 'recipes/partials/recipe_grid.html' with recipes=recent_recipes is_home_empty=is_home_empty %}
+    </section>
+</div>
+{% endblock %}

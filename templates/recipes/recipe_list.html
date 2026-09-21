@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Jelajah Resep — Dapur Nusa{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header & Search Bar -->
+    <div class="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm">
+        <h1 class="font-serif font-bold text-2xl sm:text-3xl text-stone-900">Jelajah Resep Masakan</h1>
+        <p class="text-xs sm:text-sm text-stone-500 mt-1">Cari hidangan berdasarkan bahan, kategori, waktu masak, atau tingkat kesulitan.</p>
+
+        <!-- Form Filter dengan HTMX Live Search + hx-push-url="true" B8 -->
+        <form 
+            id="filter-form"
+            hx-get="{% url 'recipes:list' %}" 
+            hx-target="#recipe-results" 
+            hx-trigger="input from:#search-input delay:350ms, change from:select"
+            hx-push-url="true"
+            class="mt-6 space-y-4">
+            
+            <!-- Hidden tag input untuk mempertahankan filter tag B8 -->
+            <input type="hidden" name="tag" id="filter-tag-input" value="{{ selected_tag }}">
+
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400">
+                    <span class="material-symbols-outlined">search</span>
+                </span>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    name="q" 
+                    value="{{ selected_q }}"
+                    placeholder="Ketik nama makanan atau bahan (contoh: Rendang, Ayam, Santan)..." 
+                    class="w-full pl-12 pr-4 py-3 rounded-2xl bg-surface-50 border border-stone-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none text-sm transition">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Kategori -->
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase text-stone-500 mb-1">Kategori</label>
+                    <select name="category" class="w-full px-3 py-2.5 rounded-xl bg-surface-50 border border-stone-200 text-xs sm:text-sm outline-none focus:border-primary-600">
+                        <option value="">Semua Kategori</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if cat.slug == selected_category %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tingkat Kesulitan -->
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase text-stone-500 mb-1">Tingkat Kesulitan</label>
+                    <select name="difficulty" class="w-full px-3 py-2.5 rounded-xl bg-surface-50 border border-stone-200 text-xs sm:text-sm outline-none focus:border-primary-600">
+                        <option value="">Semua Tingkat</option>
+                        <option value="MUDAH" {% if selected_difficulty == 'MUDAH' %}selected{% endif %}>Mudah</option>
+                        <option value="SEDANG" {% if selected_difficulty == 'SEDANG' %}selected{% endif %}>Sedang</option>
+                        <option value="SULIT" {% if selected_difficulty == 'SULIT' %}selected{% endif %}>Sulit</option>
+                    </select>
+                </div>
+
+                <!-- Durasi Masak U7 (teks maks. X menit) -->
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase text-stone-500 mb-1">Maksimal Waktu</label>
+                    <select name="time" class="w-full px-3 py-2.5 rounded-xl bg-surface-50 border border-stone-200 text-xs sm:text-sm outline-none focus:border-primary-600">
+                        <option value="">Berapa saja</option>
+                        <option value="30" {% if selected_time == '30' %}selected{% endif %}>Cepat (maks. 30 menit)</option>
+                        <option value="60" {% if selected_time == '60' %}selected{% endif %}>Standar (maks. 60 menit)</option>
+                        <option value="120" {% if selected_time == '120' %}selected{% endif %}>Matang lambat (maks. 2 jam)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tombol Reset Filter jika ada filter aktif B8 -->
+            {% if selected_q or selected_category or selected_difficulty or selected_time or selected_tag %}
+            <div class="pt-2 flex items-center justify-between">
+                <span class="text-xs text-stone-500">Filter sedang aktif</span>
+                <a href="{% url 'recipes:list' %}" class="inline-flex items-center gap-1 text-xs font-semibold text-tertiary-700 hover:underline">
+                    <span class="material-symbols-outlined text-sm">filter_alt_off</span>
+                    Reset semua filter
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Tags Pill List B8 & U5 [scrollbar-width:none] -->
+    {% if tags %}
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 text-xs [scrollbar-width:none]">
+        <span class="text-stone-500 flex-shrink-0 flex items-center gap-1 font-medium">
+            <span class="material-symbols-outlined text-sm">tag</span> Tag Populer:
+        </span>
+        {% for tag in tags %}
+            {% if tag.slug == selected_tag %}
+                <a href="{% url 'recipes:list' %}{% if querystring %}?{{ querystring|cut:'tag=' }}{% endif %}" 
+                   class="flex-shrink-0 px-3 py-1 rounded-full bg-primary-600 text-white font-semibold flex items-center gap-1 transition shadow-sm">
+                    #{{ tag.name }}
+                    <span class="material-symbols-outlined text-xs">close</span>
+                </a>
+            {% else %}
+                <a href="{% url 'recipes:list' %}?tag={{ tag.slug }}{% if selected_q %}&q={{ selected_q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_difficulty %}&difficulty={{ selected_difficulty }}{% endif %}{% if selected_time %}&time={{ selected_time }}{% endif %}" 
+                   class="flex-shrink-0 px-3 py-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 transition">
+                    #{{ tag.name }}
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Dynamic HTMX Recipe Grid Target -->
+    <div id="recipe-results">
+        {% include 'recipes/partials/recipe_grid.html' with recipes=recipes page_obj=page_obj querystring=querystring %}
+    </div>
+</div>
+{% endblock %}
