@@ -113,50 +113,65 @@ def create_presentation():
         pg.space_after = Pt(3)
 
     # ==========================================
-    # SLIDE 2: Latar Belakang & Solusi
+    # SLIDE 2: Latar Belakang & Solusi (Satu Paragraf Masing-Masing)
     # ==========================================
     slide2 = prs.slides.add_slide(blank_layout)
     set_slide_background(slide2, BG_LIGHT)
     add_header(slide2, "Latar Belakang & Solusi", "02 • LATAR BELAKANG PROYEK")
 
-    cards_data = [
-        ("Tantangan Resep Tradisional",
-         "• Resep nusantara tersebar tanpa takaran baku.\n• Sulit menghitung ulang bahan saat porsi diubah.\n• Pencatatan belanjaan masih serba manual.",
-         PRIMARY_COLOR),
-        ("Kelemahan Web Biasa",
-         "• Website modern sering lambat akibat bundle JS berat.\n• Kurang optimal diakses melalui smartphone standar.\n• Tampilan penuh distraksi iklan.",
-         SECONDARY_COLOR),
-        ("Solusi Dapur Nusa",
-         "• Katalog terstruktur dengan takaran dan langkah jelas.\n• Kalkulator Porsi Dinamis otomatis.\n• Daftar Belanja Cerdas langsung dari bahan resep.",
-         INFO_BLUE)
-    ]
-    card_w = Inches(3.68)
-    card_h = Inches(5.1)
+    # Card 1: Latar Belakang (Satu Paragraf)
+    card1_left = Inches(0.8)
+    card_width = Inches(5.65)
     card_top = Inches(1.6)
+    card_height = Inches(5.1)
 
-    for i, (ctitle, cdesc, accent) in enumerate(cards_data):
-        cleft = Inches(0.8 + i * 4.02)
-        add_card(slide2, cleft, card_top, card_w, card_h)
-        bar = slide2.shapes.add_shape(MSO_SHAPE.RECTANGLE, cleft, card_top, card_w, Inches(0.12))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = accent
-        bar.line.fill.background()
+    add_card(slide2, card1_left, card_top, card_width, card_height)
+    bar1 = slide2.shapes.add_shape(MSO_SHAPE.RECTANGLE, card1_left, card_top, card_width, Inches(0.12))
+    bar1.fill.solid()
+    bar1.fill.fore_color.rgb = PRIMARY_COLOR
+    bar1.line.fill.background()
 
-        tb = slide2.shapes.add_textbox(cleft + Inches(0.25), card_top + Inches(0.3), card_w - Inches(0.5), card_h - Inches(0.5))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = ctitle
-        p.font.size = Pt(17)
-        p.font.bold = True
-        p.font.color.rgb = accent
-        p.space_after = Pt(14)
-        for line in cdesc.split("\n"):
-            p_line = tf.add_paragraph()
-            p_line.text = line
-            p_line.font.size = Pt(13)
-            p_line.font.color.rgb = TEXT_MAIN
-            p_line.space_after = Pt(10)
+    tb1 = slide2.shapes.add_textbox(card1_left + Inches(0.4), card_top + Inches(0.4), card_width - Inches(0.8), card_height - Inches(0.8))
+    tf1 = tb1.text_frame
+    tf1.word_wrap = True
+
+    p_bg_title = tf1.paragraphs[0]
+    p_bg_title.text = "⚠️ Latar Belakang Masalah"
+    p_bg_title.font.size = Pt(20)
+    p_bg_title.font.bold = True
+    p_bg_title.font.color.rgb = PRIMARY_COLOR
+    p_bg_title.space_after = Pt(18)
+
+    p_bg_desc = tf1.add_paragraph()
+    p_bg_desc.text = "Kekayaan kuliner tradisional nusantara saat ini masih banyak tersebar secara tidak terstruktur dengan takaran yang seringkali tidak baku, sehingga menyulitkan koki rumahan dalam memperkirakan takaran bahan saat porsi diubah dan mencatat daftar belanja secara praktis, diperparah oleh kebanyakan website resep modern yang lambat serta berat diakses karena beban framework JavaScript yang berlebihan."
+    p_bg_desc.font.size = Pt(15)
+    p_bg_desc.font.color.rgb = TEXT_MAIN
+    p_bg_desc.space_after = Pt(14)
+
+    # Card 2: Solusi (Satu Paragraf)
+    card2_left = Inches(6.88)
+    add_card(slide2, card2_left, card_top, card_width, card_height)
+    bar2 = slide2.shapes.add_shape(MSO_SHAPE.RECTANGLE, card2_left, card_top, card_width, Inches(0.12))
+    bar2.fill.solid()
+    bar2.fill.fore_color.rgb = SUCCESS_COLOR
+    bar2.line.fill.background()
+
+    tb2 = slide2.shapes.add_textbox(card2_left + Inches(0.4), card_top + Inches(0.4), card_width - Inches(0.8), card_height - Inches(0.8))
+    tf2 = tb2.text_frame
+    tf2.word_wrap = True
+
+    p_sol_title = tf2.paragraphs[0]
+    p_sol_title.text = "💡 Solusi Dapur Nusa"
+    p_sol_title.font.size = Pt(20)
+    p_sol_title.font.bold = True
+    p_sol_title.font.color.rgb = SUCCESS_COLOR
+    p_sol_title.space_after = Pt(18)
+
+    p_sol_desc = tf2.add_paragraph()
+    p_sol_desc.text = "Dapur Nusa menghadirkan platform katalog resep nusantara terstandarisasi berbasis arsitektur DATH Stack yang sangat ringan dan cepat, dilengkapi fitur cerdas kalkulator porsi dinamis untuk penyesuaian takaran bahan secara otomatis serta integrasi daftar belanja digital yang mempermudah seluruh proses memasak hidangan tradisional dari awal hingga akhir."
+    p_sol_desc.font.size = Pt(15)
+    p_sol_desc.font.color.rgb = TEXT_MAIN
+    p_sol_desc.space_after = Pt(14)
 
     # ==========================================
     # SLIDE 3: DATH Stack
@@ -253,6 +268,10 @@ def create_presentation():
          "• Role Pengguna Biasa: Membaca, menulis resep, belanja, simpan favorit.\n• Role Admin: Manajemen konten, kurasi, dan moderasi komunitas.",
          SUCCESS_COLOR)
     ]
+    card_w = Inches(3.68)
+    card_h = Inches(5.1)
+    card_top = Inches(1.6)
+
     for i, (title, content, bar_color) in enumerate(admin_cols):
         cleft = Inches(0.8 + i * 4.02)
         add_card(slide5, cleft, card_top, card_w, card_h)
@@ -386,7 +405,7 @@ def create_presentation():
     p3.font.bold = True
     p3.font.color.rgb = ACCENT_COLOR
 
-    output_path = r"c:\Users\LAB1_CLIENT25\Desktop\resep_makan\Presentasi_Dapur_Nusa_Kelompok.pptx"
+    output_path = r"c:\Users\LAB1_CLIENT25\Desktop\resep_makan\Presentasi_Dapur_Nusa_Final.pptx"
     prs.save(output_path)
     print(f"Presentation saved successfully to {output_path}")
 
